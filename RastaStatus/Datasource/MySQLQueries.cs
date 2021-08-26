@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using Org.BouncyCastle.Utilities;
 using RastaStatus.Models.Queries;
 using RastaStatus.Models.Services;
 
@@ -54,16 +55,8 @@ namespace RastaStatus.Datasource
                     string type = (string) rdr[3];
                     int serviceType = 0;
                     
-                    switch (type)
-                    {
-                        case "0":
-                            serviceType = 0;
-                            break;
-                        case "1":
-                            serviceType = 1;
-                            break;
-                    }
-                    
+                    serviceType = Int32.Parse(type);
+
                     servicesModels.Add(new ServicesModel()
                     {
                         id = rdr[0] as string,

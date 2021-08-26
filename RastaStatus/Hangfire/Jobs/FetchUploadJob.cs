@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using MineStatLib;
 using RastaStatus.Datasource;
 using RastaStatus.Models.Queries;
 using RastaStatus.Models.Services;
@@ -19,37 +20,88 @@ namespace RastaStatus.Hangfire.Jobs
 
             foreach (ServicesModel output in servicesModels)
             {
-                long latency;
-                bool success = false;
+                ResultModel result = null;
                 
+                Console.WriteLine(output.domain + " " + output.type);
                 
-                HttpClient client = new HttpClient();
-                
-                Stopwatch stopWatch = Stopwatch.StartNew();
-                HttpResponseMessage response = await client.GetAsync("https://" + output.domain);
-
-                latency = stopWatch.ElapsedMilliseconds;
-
-                switch (response.StatusCode)
+                switch (output.type)
                 {
-                    case HttpStatusCode.OK:
-                        success = true;
+                    case ServiceType.HTTP:
+                        result = await FetchHttp(output);
                         break;
-                    default:
-                        success = false;
+                    case ServiceType.MINECRAFT:
+                        result = FetchMinecraft(output);
                         break;
                 }
-                
-                MySQLQueries.InsertServiceQuery(new QueriesModel()
+
+                if (result == null)
+                {
+                    //TODO: Hacer un mejor nulll handler que esta cosa XD.
+                    continue;
+                }
+
+                await MySQLQueries.InsertServiceQuery(new QueriesModel()
                 {
                     id = RandomUtils.GenRandomString(12),
                     serviceId = output.id,
-                    state = success,
+                    state = result.success,
                     date = DateUtils.GenDatetime(),
-                    latency = (int) latency
+                    latency = result.latency
                 });
             }
-
         }
+
+        private static ResultModel FetchMinecraft(ServicesModel serviceInfo)
+        {
+            bool success = false;
+            
+            MineStat ms = new MineStat(serviceInfo.ip, 25565);
+
+            if (ms.ServerUp)
+            {
+                success = true;
+            }
+
+            return new ResultModel()
+            {
+                latency = (int) ms.Latency,
+                success = success
+            };
+        }
+
+        private static async Task<ResultModel> FetchHttp(ServicesModel serviceInfo)
+        {
+            long latency;
+            bool success = false;
+            
+            HttpClient client = new HttpClient();
+                
+            Stopwatch stopWatch = Stopwatch.StartNew();
+            HttpResponseMessage response = await client.GetAsync("https://" + serviceInfo.domain);
+
+            latency = stopWatch.ElapsedMilliseconds;
+
+            switch (response.StatusCode)
+            {
+                case HttpStatusCode.OK:
+                    success = true;
+                    break;
+                default:
+                    success = false;
+                    break;
+            }
+
+            return new ResultModel()
+            {
+                latency = (int) latency,
+                success = success
+            };
+        }
+    }
+
+    class ResultModel
+    {
+        public int latency { get; set; }
+        public bool success { get; set; }
     }
 }
