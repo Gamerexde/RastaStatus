@@ -26,7 +26,7 @@ namespace RastaStatus
         {
             services.AddCors(options =>
             {
-                options.AddDefaultPolicy(builder => 
+                options.AddDefaultPolicy(builder =>
                     builder.SetIsOriginAllowed(_ => true)
                         .AllowAnyMethod()
                         .AllowAnyHeader()
@@ -65,6 +65,8 @@ namespace RastaStatus
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors();
 
             app.UseAuthorization();
             

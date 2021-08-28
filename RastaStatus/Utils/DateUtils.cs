@@ -2,15 +2,14 @@
 
 namespace RastaStatus.Utils
 {
-    public interface DateUtils
+    public class DateUtils
     {
+        public static string MysqlDateFormat = "yyyy-MM-dd HH:mm:ss";
         public static string GenDatetime()
         {
             DateTime dateTime = DateTime.Now;
-
-            string formated = dateTime.Year + "-" + dateTime.Month + "-" + dateTime.Day + " " +
-                              dateTime.Hour + ":" + dateTime.Minute + ":" + dateTime.Second;
-            return formated;
+            
+            return dateTime.ToString("yyyy-MM-dd HH:mm:ss");
         }
     }
 }

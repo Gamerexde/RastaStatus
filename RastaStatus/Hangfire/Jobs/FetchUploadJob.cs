@@ -36,9 +36,13 @@ namespace RastaStatus.Hangfire.Jobs
 
                 if (result == null)
                 {
-                    //TODO: Hacer un mejor nulll handler que esta cosa XD.
-                    continue;
+                    result = new ResultModel()
+                    {
+                        latency = 0,
+                        success = false
+                    };
                 }
+                
 
                 await MySQLQueries.InsertServiceQuery(new QueriesModel()
                 {
@@ -77,25 +81,35 @@ namespace RastaStatus.Hangfire.Jobs
             HttpClient client = new HttpClient();
                 
             Stopwatch stopWatch = Stopwatch.StartNew();
-            HttpResponseMessage response = await client.GetAsync("https://" + serviceInfo.domain);
 
-            latency = stopWatch.ElapsedMilliseconds;
-
-            switch (response.StatusCode)
+            try
             {
-                case HttpStatusCode.OK:
-                    success = true;
-                    break;
-                default:
-                    success = false;
-                    break;
+                // TODO: Add classic Http fetching (idk why but fine)
+                HttpResponseMessage response = await client.GetAsync("https://" + serviceInfo.domain);
+                
+                latency = stopWatch.ElapsedMilliseconds;
+
+                switch (response.StatusCode)
+                {
+                    case HttpStatusCode.OK:
+                        success = true;
+                        break;
+                }
+
+                return new ResultModel()
+                {
+                    latency = (int) latency,
+                    success = success
+                };
             }
-
-            return new ResultModel()
+            catch (InvalidOperationException e)
             {
-                latency = (int) latency,
-                success = success
-            };
+                return null;
+                
+            } catch (HttpRequestException e)
+            {
+                return null;
+            }
         }
     }
 
