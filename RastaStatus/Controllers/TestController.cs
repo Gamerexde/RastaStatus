@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using RastaStatus.Datasource;
-using RastaStatus.Models.Queries;
-using RastaStatus.Models.Services;
+﻿using Microsoft.AspNetCore.Mvc;
 using RastaStatus.Utils;
 
 namespace RastaStatus.Controllers

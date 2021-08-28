@@ -43,7 +43,7 @@ namespace RastaStatus.Controllers
         }
         
         [HttpGet("uptime")]
-        public async Task<ActionResult<double>> GetUptimePercent(string serviceId)
+        public async Task<ActionResult<float>> GetUptimePercent(string serviceId)
         {
             if (String.IsNullOrEmpty(serviceId))
             {
@@ -63,9 +63,9 @@ namespace RastaStatus.Controllers
                 .Select(query => query)
                 .ToList();
 
-            double ratio = (float)(successQueries.Count - failedQueries.Count) / successQueries.Count;
+            float ratio = (float)(successQueries.Count - failedQueries.Count) / successQueries.Count;
 
-            double percent = ratio * 100;
+            float percent = ratio * 100;
 
 
             return Ok(percent);
